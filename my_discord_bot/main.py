@@ -1,8 +1,13 @@
-import os, discord, asyncio
-from datetime import datetime, timedelta
+import os
+import discord
+import asyncio
 import google.generativeai as genai
 from discord.ext import commands
 from collections import defaultdict
+import webserver  # Import the webserver module
+
+# Start Flask webserver in background thread
+webserver.start()
 
 # ENV VARIABLES
 discord_token = os.getenv("Secret_Key")
@@ -130,5 +135,3 @@ async def query_gemini_chat(chat_session, user_input):
 
 # === RUN ===
 bot.run(discord_token)
-
-
