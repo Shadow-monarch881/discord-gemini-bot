@@ -4,7 +4,7 @@ import asyncio
 import google.generativeai as genai
 from discord.ext import commands
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import webserver  # Import the webserver module
 
 # Start Flask webserver in background thread
@@ -43,7 +43,7 @@ def get_role_level(member: discord.Member):
         return "user"
 
 def can_talk(user_id, role_level):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if role_level in ["owner", "head_admin"]:
         return True
     timestamps = user_timestamps.get(user_id, {"start": None, "rest_until": None})
@@ -82,8 +82,7 @@ async def on_message(message):
     # === REPEAT MODE ===
     if repeat_enabled and last_record and message.channel.id == repeat_channel_id:
         try:
-            reply = last_record[:4000]  # Prevent Discord 4000 char error
-            await message.channel.send(reply)
+            await send_long_message(message.channel, last_record)
         except discord.HTTPException as e:
             print(f"❌ Failed to send message in repeat: {e}")
 
@@ -91,35 +90,44 @@ async def on_message(message):
     if bot.user in message.mentions and any(q in msg_lower for q in ["who made you", "your creator", "developer", "built you"]):
         embed = discord.Embed(
             title="🤖 Akane — AI Assistant",
-            description="I was created by **Noviac** for his community.",
+            description="I was created by **Noviac** for his community 💖",
             color=discord.Color.purple()
         )
         embed.add_field(name="🌐 Server", value="[Join here](https://discord.gg/HgZP7tMw)", inline=False)
-        embed.add_field(name="📩 Contact", value="DM **Noviac** for more info.", inline=False)
+        embed.add_field(name="📩 Contact", value="DM **Noviac** for more info 💌", inline=False)
         embed.set_footer(text="Proudly serving with ❤️")
         await message.channel.send(embed=embed)
         return
 
     # NSFW keyword filter
     if any(word in msg_lower for word in ["nsfw", "18+", "porn", "sex"]):
-        await message.channel.send("⚠️ NSFW content is not allowed.")
+        await message.channel.send("⚠️ Ew~ nope! I’m a classy lady 💅✨ No NSFW here!")
         return
 
     # AI CHAT
     if bot.user in message.mentions:
         if not can_talk(user_id, role_level):
-            await message.channel.send("⏳ I'm taking a short break. I'll be back in 2 minutes!")
+            await message.channel.send("⏳ Babe, I need a tiny break~ be back in 2 mins 💖")
             return
 
         user_input = message.content.replace(f"<@{bot.user.id}>", "").strip()
         history = user_memory[user_id][-6:]
         chat_session = model.start_chat(history=history)
-        reply = await query_gemini_chat(chat_session, user_input)
 
-        last_record = reply  # Save last response for repeat
-        repeat_channel_id = message.channel.id  # Save channel to repeat only here
+        # Modify user input to enforce girly style
+        styled_prompt = (
+            f"Reply in a cute, girly, playful tone with some emojis. "
+            f"Make it friendly, bubbly, and warm, but still answer correctly. "
+            f"User said: {user_input}"
+        )
 
-        await message.channel.send(reply)
+        async with message.channel.typing():
+            reply = await query_gemini_chat(chat_session, styled_prompt)
+
+        last_record = reply
+        repeat_channel_id = message.channel.id
+
+        await send_long_message(message.channel, reply)  # Use chunked sending
 
         user_memory[user_id].append({"role": "user", "parts": [user_input]})
         user_memory[user_id].append({"role": "model", "parts": [reply]})
@@ -129,11 +137,19 @@ async def on_message(message):
 async def query_gemini_chat(chat_session, user_input):
     try:
         response = await chat_session.send_message_async(user_input)
-        return response.text
+        return response.text.strip()
     except Exception as e:
         print(f"Error: {e}")
-        return "Sorry, I had trouble responding."
+        return "Oopsie~ I had a lil’ hiccup trying to respond 💔"
+
+async def send_long_message(channel, text):
+    """Send a long message split into chunks of ≤2000 characters."""
+    if len(text) > 2000:
+        chunks = [text[i:i+2000] for i in range(0, len(text), 2000)]
+        for chunk in chunks:
+            await channel.send(chunk)
+    else:
+        await channel.send(text)
 
 # === RUN ===
 bot.run(discord_token)
-
