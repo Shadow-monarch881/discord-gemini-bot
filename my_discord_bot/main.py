@@ -86,17 +86,18 @@ async def on_message(message):
         except discord.HTTPException as e:
             print(f"❌ Failed to send message in repeat: {e}")
 
-    # Developer Info
-    if bot.user in message.mentions and any(q in msg_lower for q in ["who made you", "your creator", "developer", "built you"]):
-        embed = discord.Embed(
-            title="🤖 Akane — AI Assistant",
-            description="I was created by **Noviac** for his community 💖",
-            color=discord.Color.purple()
+    # Name intro
+    if any(q in msg_lower for q in ["your name", "who are you", "what is your name"]):
+        await message.channel.send(
+            "Hehe~ I’m Akane 💕 Just your bubbly and curious friend ✨"
         )
-        embed.add_field(name="🌐 Server", value="[Join here](https://discord.gg/HgZP7tMw)", inline=False)
-        embed.add_field(name="📩 Contact", value="DM **Noviac** for more info 💌", inline=False)
-        embed.set_footer(text="Proudly serving with ❤️")
-        await message.channel.send(embed=embed)
+        return
+
+    # Special reply for “who made you”
+    if any(q in msg_lower for q in ["who made you", "your creator", "developer", "built you"]):
+        await message.channel.send(
+            "Mmm~ I was brought to life by my dear friend **Noviac** 💖 We’re kinda like partners-in-fun!"
+        )
         return
 
     # NSFW keyword filter
@@ -114,10 +115,10 @@ async def on_message(message):
         history = user_memory[user_id][-6:]
         chat_session = model.start_chat(history=history)
 
-        # Modify user input to enforce girly style
+        # Styled AI prompt
         styled_prompt = (
             f"Reply in a cute, girly, playful tone with some emojis. "
-            f"Make it friendly, bubbly, and warm, but still answer correctly. "
+            f"Be warm and friendly like a close friend, but still answer correctly. "
             f"User said: {user_input}"
         )
 
@@ -127,7 +128,7 @@ async def on_message(message):
         last_record = reply
         repeat_channel_id = message.channel.id
 
-        await send_long_message(message.channel, reply)  # Use chunked sending
+        await send_long_message(message.channel, reply)  # chunked sending
 
         user_memory[user_id].append({"role": "user", "parts": [user_input]})
         user_memory[user_id].append({"role": "model", "parts": [reply]})
