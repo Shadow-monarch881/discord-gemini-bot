@@ -5,7 +5,11 @@ import google.generativeai as genai
 from discord.ext import commands
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-import webserver  # Import the webserver module
+try:
+    import webserver
+    webserver.start()
+except Exception as e:
+    print(f"Webserver failed to start: {e}")
 
 # === CONFIG ===
 OWNER_ID = 620819429139415040  # Your Discord user ID
