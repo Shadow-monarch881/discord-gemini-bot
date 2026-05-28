@@ -7,7 +7,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 try:
     import webserver
-    webserver.start()
 except Exception as e:
     print(f"Webserver failed to start: {e}")
 
