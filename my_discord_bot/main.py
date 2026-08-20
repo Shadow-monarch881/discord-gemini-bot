@@ -223,11 +223,18 @@ async def on_message(message):
         ]
     ):
 
-        await message.channel.send(
-            "⚠️ Ew~ nope! I’m a classy lady 💅✨ "
-            "No NSFW here!"
-        )
+embed = discord.Embed(
+    description=(
+        "Sheeesh~ I was cooking for Noviác too hard~ "
+        "give me a tiny break, okay? 💕"
+    )
+)
 
+embed.set_image(
+    url="https://cdn.discordapp.com/attachments/1375603204351590463/1539924812732960819/chert.png?ex=6a88163d&is=6a86c4bd&hm=e7e0ba63a36dabae8e54b186271ab3d7b6b1eb4f47e5ca99a557d0a77859390e&"
+)
+
+await message.channel.send(embed=embed)
         return
 
 
