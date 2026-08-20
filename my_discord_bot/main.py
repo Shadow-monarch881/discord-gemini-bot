@@ -10,6 +10,7 @@ try:
     import webserver
 except Exception as e:
     print(f"Webserver failed to start: {e}")
+    webserver = None
 
 
 # ============================================================
@@ -23,7 +24,8 @@ OWNER_ID = 620819429139415040
 # WEB SERVER
 # ============================================================
 
-webserver.start()
+if webserver:
+    webserver.start()
 
 
 # ============================================================
@@ -33,7 +35,6 @@ webserver.start()
 discord_token = os.getenv("Secret_Key")
 gemini_api_key = os.getenv("GEMINI_API_KEY")
 
-# Cooldown image
 COOLDOWN_IMAGE_URL = (
     "https://cdn.discordapp.com/attachments/"
     "1375603204351590463/"
@@ -41,7 +42,6 @@ COOLDOWN_IMAGE_URL = (
     "chert.png?ex=6a88163d&is=6a86c4bd&"
     "hm=e7e0ba63a36dabae8e54b186271ab3d7b6b1eb4f47e5ca99a557d0a77859390e&"
 )
-
 
 if not discord_token or not gemini_api_key:
     raise ValueError("❌ Missing API keys!")
@@ -75,7 +75,6 @@ bot = commands.Bot(
 # ============================================================
 
 user_memory = defaultdict(list)
-
 user_timestamps = {}
 
 
@@ -126,12 +125,17 @@ def get_role_level(member: discord.Member):
 
 # ============================================================
 # TALK COOLDOWN
-# Everyone follows the same cooldown
+# Only OWNER_ID is exempt
+# Everyone else gets 3 min -> 2 min break
 # ============================================================
 
 def can_talk(user_id, role_level):
 
     now = datetime.now(timezone.utc)
+
+    # Only Noviác gets unlimited access
+    if user_id == OWNER_ID:
+        return True
 
     timestamps = user_timestamps.get(
         user_id,
@@ -141,22 +145,14 @@ def can_talk(user_id, role_level):
         }
     )
 
-
-    # --------------------------------------------------------
     # Currently resting
-    # --------------------------------------------------------
-
     if (
         timestamps["rest_until"]
         and now < timestamps["rest_until"]
     ):
         return False
 
-
-    # --------------------------------------------------------
     # Start a new talking period
-    # --------------------------------------------------------
-
     if not timestamps["start"]:
 
         user_timestamps[user_id] = {
@@ -166,14 +162,9 @@ def can_talk(user_id, role_level):
 
         return True
 
-
     elapsed = now - timestamps["start"]
 
-
-    # --------------------------------------------------------
-    # 5 minutes reached
-    # --------------------------------------------------------
-
+    # 3 minutes reached -> 2 minute break
     if elapsed >= timedelta(
         minutes=COOLDOWN_MINUTES
     ):
@@ -186,7 +177,6 @@ def can_talk(user_id, role_level):
         }
 
         return False
-
 
     return True
 
@@ -234,7 +224,6 @@ async def send_cooldown_message(channel):
         "give me a tiny break, okay? 🥹✨💕"
     )
 
-
     embed = discord.Embed(
         description=text
     )
@@ -242,7 +231,6 @@ async def send_cooldown_message(channel):
     embed.set_image(
         url=COOLDOWN_IMAGE_URL
     )
-
 
     await channel.send(
         embed=embed
@@ -270,14 +258,12 @@ async def on_message(message):
     global last_record
     global repeat_channel_id
 
-
     # ========================================================
     # IGNORE BOTS
     # ========================================================
 
     if message.author.bot:
         return
-
 
     msg_lower = message.content.lower()
 
@@ -384,7 +370,6 @@ async def on_message(message):
 
     if bot.user in message.mentions:
 
-
         # ----------------------------------------------------
         # COOLDOWN
         # ----------------------------------------------------
@@ -483,12 +468,10 @@ async def on_message(message):
             "Avoid overly romantic or parental vibes — keep the "
             "relationship like close friends. "
 
-
-            # =================================================
-            # NORMAL MODE
-            # =================================================
-
-            + (
+            (
+                # =================================================
+                # NORMAL MODE
+                # =================================================
 
                 "Normally keep your response to 3-4 sentences "
                 "maximum, usually around 40-90 words. "
@@ -513,7 +496,6 @@ async def on_message(message):
 
                 if not detailed
 
-
                 # =================================================
                 # DETAILED MODE
                 # =================================================
@@ -531,7 +513,6 @@ async def on_message(message):
 
                 "Do not add meaningless filler just to make the "
                 "response longer."
-
             )
 
             + f" User said: {user_input}"
@@ -588,7 +569,6 @@ async def on_message(message):
             }
         )
 
-
         # Keep last 6 messages
         user_memory[user_id] = (
             user_memory[user_id][-6:]
@@ -607,34 +587,21 @@ async def query_gemini_chat(
 
     try:
 
-        # Normal:
-        # 250 tokens maximum
-        #
-        # Detailed:
-        # 700 tokens maximum
-
         max_tokens = (
             700
             if detailed
             else 250
         )
 
-
         response = await chat_session.send_message_async(
-
             user_input,
-
             generation_config=genai.types.GenerationConfig(
-
                 max_output_tokens=max_tokens,
-
                 temperature=0.8
             )
         )
 
-
         return response.text.strip()
-
 
     except Exception as e:
 
