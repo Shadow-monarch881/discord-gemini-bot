@@ -1,4 +1,3 @@
-```python
 import os
 import discord
 import asyncio
@@ -15,6 +14,7 @@ except Exception as e:
 
 # === CONFIG ===
 OWNER_ID = 620819429139415040  # Your Discord user ID
+COOLDOWN_IMAGE_URL = "https://cdn.discordapp.com/attachments/1375603204351590463/1539924812732960819/chert.png?ex=6a88163d&is=6a86c4bd&hm=e7e0ba63a36dabae8e54b186271ab3d7b6b1eb4f47e5ca99a557d0a77859390e&"
 
 
 # Start Flask webserver in background thread
@@ -239,9 +239,11 @@ async def on_message(message):
     if bot.user in message.mentions:
 
         if not can_talk(user_id, role_level):
-            await message.channel.send(
-                "⏳ Babe, I need a tiny break~ be back in 2 mins 💖"
+            embed = discord.Embed(
+                description="💗 *Shhh~ I'm cooking for Noviác right now!*"
             )
+            embed.set_image(url=COOLDOWN_IMAGE_URL)
+            await message.channel.send(embed=embed)
             return
 
 
@@ -446,4 +448,3 @@ async def send_long_message(channel, text):
 # ============================================================
 
 bot.run(discord_token)
-```
