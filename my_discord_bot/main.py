@@ -1,3 +1,4 @@
+```python
 import os
 import discord
 import asyncio
@@ -108,11 +109,6 @@ def can_talk(user_id, role_level):
 # ============================================================
 
 def wants_more_detail(user_input: str):
-    """
-    Returns True only when the user explicitly asks
-    for a longer/deeper explanation.
-    """
-
     text = user_input.lower().strip()
 
     detail_phrases = [
@@ -125,10 +121,13 @@ def wants_more_detail(user_input: str):
         "elaborate more",
         "more detail",
         "more details",
+        "more info",
+        "more information",
+        "get me more info",
+        "give me more info",
+        "give me more information",
         "in detail",
         "give me details",
-        "give more info",
-        "more information",
         "expand on that",
         "expand this",
         "explain in detail",
@@ -136,6 +135,13 @@ def wants_more_detail(user_input: str):
         "longer explanation",
         "break it down",
         "break this down",
+        "how do i fix",
+        "how can i fix",
+        "help me fix",
+        "help me with this",
+        "what should i do",
+        "give me a solution",
+        "give me solutions",
     ]
 
     return any(phrase in text for phrase in detail_phrases)
@@ -261,13 +267,19 @@ async def on_message(message):
         if detailed:
 
             response_rules = """
-The user explicitly asked for more detail.
+The user wants more information, more detail, help solving a problem,
+or a deeper explanation.
 
-Give a properly detailed explanation.
-You can use multiple paragraphs or bullet points when useful.
-Explain the reasoning and important details clearly.
-Do not add meaningless filler just to make the response longer.
-Still avoid repeating the same point.
+Give a fuller and genuinely useful response.
+
+- Explain the important points clearly.
+- Break complicated problems into manageable parts.
+- Give practical solutions or next steps when appropriate.
+- Use bullet points when there are multiple things to cover.
+- Prioritize the most important things first.
+- You may use multiple paragraphs.
+- Do not repeat the same point in different words.
+- Do not add meaningless filler just to make the response longer.
 """
 
             max_tokens = 700
@@ -275,31 +287,42 @@ Still avoid repeating the same point.
         else:
 
             response_rules = """
-IMPORTANT: Keep this response SHORT.
+Keep the response conversational and reasonably concise.
 
-For normal conversation, aim for roughly 30-80 words.
-For a very simple question, 1-3 sentences is enough.
+For simple casual messages:
+- Usually 2-6 sentences.
+- Use fewer words when a simple answer is enough.
 
-Give the main useful answer immediately.
+For messages where the user is describing a problem,
+asking for advice, or clearly needs help:
+- Do NOT respond with only sympathy.
+- Acknowledge the problem briefly.
+- Then actually help with useful advice, ideas, solutions,
+  or a practical next step.
+- You can use a small number of bullet points if useful.
+- Give enough information to be helpful without writing an essay.
 
-DO NOT:
-- write an essay
-- repeat the user's situation
-- repeat the same advice in different words
-- add unnecessary reassurance
-- add motivational speeches
-- add filler
-- explain every possible angle
-- turn a simple question into a long analysis
+General rules:
+- Aim for roughly 50-120 words when the topic needs it.
+- Answer the main point first.
+- Match the user's energy.
+- You can add a small follow-up thought or question when natural.
+- Do not repeat the user's situation unnecessarily.
+- Do not repeat the same advice in different words.
+- Do not add motivational speeches or filler.
+- Do not turn a simple conversation into a huge analysis.
 
-Do not expand the answer unless the user explicitly asks
-for more detail, such as "explain more", "tell me more",
-"elaborate", "go deeper", or similar.
+Never respond with ONLY:
+"Oh no, sweetie."
+"That sounds hard."
+"I understand."
+"You've got this."
 
-Be warm and natural, but brevity comes first.
+Those can be part of the response, but the response should still
+provide something useful when the user is asking for help.
 """
 
-            max_tokens = 180
+            max_tokens = 250
 
 
         # ====================================================
@@ -423,3 +446,4 @@ async def send_long_message(channel, text):
 # ============================================================
 
 bot.run(discord_token)
+```
