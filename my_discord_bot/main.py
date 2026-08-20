@@ -240,18 +240,26 @@ async def on_message(message):
             role_level
         ):
 
-embed = discord.Embed(
-    description=(
-        "Sheeesh~ I was cooking for Noviác too hard~ "
-        "give me a tiny break, okay? 💕"
-    )
-)
+            embed = discord.Embed(
+                description=(
+                    "Sheeesh~ I was cooking for Noviác too hard~ "
+                    "give me a tiny break, okay? 💕"
+                )
+            )
 
-embed.set_image(
-    url="https://cdn.discordapp.com/attachments/1375603204351590463/1539924812732960819/chert.png?ex=6a88163d&is=6a86c4bd&hm=e7e0ba63a36dabae8e54b186271ab3d7b6b1eb4f47e5ca99a557d0a77859390e&"
-)
+            embed.set_image(
+                url=(
+                    "https://cdn.discordapp.com/attachments/"
+                    "1375603204351590463/"
+                    "1539924812732960819/"
+                    "chert.png?ex=6a88163d&is=6a86c4bd&"
+                    "hm=e7e0ba63a36dabae8e54b186271ab3d7b6b1eb4f47e5ca99a557d0a77859390e&"
+                )
+            )
 
-await message.channel.send(embed=embed)
+            await message.channel.send(
+                embed=embed
+            )
 
             return
 
@@ -324,8 +332,13 @@ await message.channel.send(embed=embed)
 
 
 # === HELPERS ===
-async def query_gemini_chat(chat_session, user_input):
+async def query_gemini_chat(
+    chat_session,
+    user_input
+):
+
     try:
+
         response = await chat_session.send_message_async(
             user_input,
             generation_config=genai.types.GenerationConfig(
@@ -336,8 +349,13 @@ async def query_gemini_chat(chat_session, user_input):
         return response.text.strip()
 
     except Exception as e:
+
         print(f"Error: {e}")
-        return "Oopsie~ I had a lil’ hiccup trying to respond 💔"
+
+        return (
+            "Oopsie~ I had a lil’ hiccup "
+            "trying to respond 💔"
+        )
 
 
 async def send_long_message(
